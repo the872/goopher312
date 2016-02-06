@@ -41,7 +41,7 @@ func request(conn net.Conn) {
      buff := make([]byte, 1024)
      
      //read incoming connection
-     reqLen, err := conn.Read(buff)
+     _, err := conn.Read(buff)
      if err != nil {
      	fmt.Println("Error reading: ", err.Error())
      }
