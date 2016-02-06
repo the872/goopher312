@@ -47,7 +47,7 @@ func request(conn net.Conn) {
      }
      
      //response 
-     conn.Write ([]byte("Message received!))
+     conn.Write ([]byte("Message received!"))
 
      conn.Close()
 }
