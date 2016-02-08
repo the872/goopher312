@@ -25,13 +25,13 @@ func suffix(f *os.FileInfo) string {
 	switch {
 	case strings.HasPrefix(n, ".html"):
 		return "h"
-    case strings.HasPrefix(n, ".mp3"),
-        strings.HasPrefix(n, ".aiff"),
-        string.HasPrefix(n, ".au"):
-        return "s"
+    	case strings.HasPrefix(n, ".mp3"),
+        	strings.HasPrefix(n, ".aiff"),
+        	string.HasPrefix(n, ".au"):
+        	return "s"
 	case strings.HasPrefix(n, ".txt"),
-        strings.HasPrefix(n, ".json"),
-        strings.HasPrefix(n, ".md"):
+        	strings.HasPrefix(n, ".json"),
+        	strings.HasPrefix(n, ".md"):
 		return "0"
 	case strings.HasPrefix(n, ".gif"):
 		return "g"
