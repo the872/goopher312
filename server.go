@@ -1,53 +1,90 @@
-package main 
+package main
 
 import (
-        "fmt"
+	"bufio"
+	"flag"
+	"fmt"
+	"log"
 	"net"
+	"io"
 	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 )
 
-const (
-      CONN_HOST = "localhost"
-      CONN_PORT = "8070"
-      CONN_TYPE = "tcp"
-)
+var root = flag.String("root", "", "root directory")
+var dir string
+type fileName []os.FileInfo
 
-func main() { 
-
-     //listening for incoming connections
-     l, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
-     if err != nil {
-     	fmt.Println("Listening error:", err.Error())
-	os.Exit(0)
-     }
-
-     defer l.Close()
-     fmt.Println("Listening on " + CONN_HOST + ":" + CONN_PORT)
-     for { 
-     	 //listen for incoming connection
-	 conn, err := l.Accept()
-	 if err != nil {
-	    fmt.Println("Error accepting: ", err.Error())
-	    os.Exit(0)
-	 }
-
-	 //request handling
-	 go request(conn)
-     }
+func suffix(f *os.FileInfo) string {
+	if f.IsDirectory() {
+		return "1"
+	}
+	n := f.Name
+	switch {
+	case strings.HasPrefix(n, ".html"):
+		return "h"
+    case strings.HasPrefix(n, ".mp3"),
+        strings.HasPrefix(n, ".aiff"),
+        string.HasPrefix(n, ".au"):
+        return "s"
+	case strings.HasPrefix(n, ".txt"),
+        strings.HasPrefix(n, ".json"),
+        strings.HasPrefix(n, ".md"):
+		return "0"
+	case strings.HasPrefix(n, ".gif"):
+		return "g"
+	case strings.HasPrefix(n, ".png"),
+		strings.HasPrefix(n, ".jpg"),
+		strings.HasPrefix(n, ".jpeg"):
+		return "I"
+	}
+	return "9"
 }
 
-func request(conn net.Conn) {
-     //data buffer
-     buff := make([]byte, 1024)
-     
-     //read incoming connection
-     _, err := conn.Read(buff)
-     if err != nil {
-     	fmt.Println("Error reading: ", err.Error())
-     }
-     
-     //response 
-     conn.Write ([]byte("Message received!"))
+func getDir() string {
+	gr := os.Getenv("GOROOT")
+	return filepath.Join(gr, "doc")
+}
 
-     conn.Close()
+func serve(n net.Conn) {
+	defer n.Close()
+	r := bufio.NewReader(n)
+	w := bufio.NewWriter(n)
+	defer w.Flush()
+
+	l := r.ReadSlice('\n')
+	line := string(l)
+	line = filepath.Clean(line)
+	fileName := filepath.Join(dir, line)
+	f := os.Stat(fileName)
+
+	switch {
+	case f.IsDirectory():
+		e := os.Open(fileName)
+		fg := e.Readdir(-1)
+		sort.Sort(fileName(fg))
+
+    	for _, f := range fg {
+		fmt.Fprintf(w, "%s%s\r\n",suffix(&f),strings.Join([]string{
+				f.Name,line + "/" + f.Name,"127.0.0.1","70",}, "\t"))
+		}
+
+	case f.IsRegular():
+		e := os.Open(fileName)
+		io.Copy(w, e)
+
+	default:
+		log.Printf("bad file")
+	}
+}
+
+func main() {
+	flag.Parse()
+	dir = getDir()
+	l := net.Listen("tcp", ":70")
+	for {
+		go serve(l.Accept())
+	}
 }
