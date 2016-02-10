@@ -12,10 +12,38 @@ const (
 		host = "localhost"
 )
 
+<<<<<<< HEAD
 var (
 	port = flag.String("port", "8070", "port")
 	root = flag.String("root", "/srv/gopher", "root")
 )
+=======
+func suffix(f *os.FileInfo) string {
+	if f.IsDirectory() {
+		return "1"
+	}
+	n := f.Name
+	switch {
+	case strings.HasPrefix(n, ".html"):
+		return "h"
+    	case strings.HasPrefix(n, ".mp3"),
+        	strings.HasPrefix(n, ".aiff"),
+        	string.HasPrefix(n, ".au"):
+        	return "s"
+	case strings.HasPrefix(n, ".txt"),
+        	strings.HasPrefix(n, ".json"),
+        	strings.HasPrefix(n, ".md"):
+		return "0"
+	case strings.HasPrefix(n, ".gif"):
+		return "g"
+	case strings.HasPrefix(n, ".png"),
+		strings.HasPrefix(n, ".jpg"),
+		strings.HasPrefix(n, ".jpeg"):
+		return "I"
+	}
+	return "9"
+}
+>>>>>>> 707142794c9aab72514250168ce9f2838d134a3d
 
 func init() {
 	flag.Parse()
