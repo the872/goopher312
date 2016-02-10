@@ -9,7 +9,7 @@ import (
 )
 
 const (
-		host = "localhost"
+	host = "localhost"
 )
 
 var (
@@ -40,7 +40,6 @@ func handle(c net.Conn) {
 
 func serve(h string, p string, done chan int) {
 	l := net.Listen("tcp", h + ":" + p)
-
 	for {
 		c := l.Accept()
 		go handle(c)
